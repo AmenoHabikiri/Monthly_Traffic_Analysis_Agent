@@ -1,0 +1,30 @@
+I want to create a story board like the folder I have attached using react.js in frontend and fast api and python for backend. Database to be stored in vector database. That can be shown in a website. Where using the datasets I provided I want you to showcase trends, analysis, understanding of the data.
+In these 4 datasets, there is month on month analysis.
+1. Create a story about how Application ranks changed, Rank of which applications improved/degraded over the months.
+2. Create a story about how Device ranks changed, Rank of which device types imporved/degraded over the months.
+3. Create a stroy how over the months data consumptions trends have been. How DL(Downlink) UL(Uplink) story have evovled.
+4. How compare between Holiday/workday
+5. Compare between 46/5g. Showcase this fact that 5G data consumption is steadily increase, percentage share of 5G consumption is also increasing.
+6. Compare between B2B and B2C,
+7. Compare between different other devices.
+ Keep a button for graphs where if I click, I will get percentage comparison of absolute value wherever it makes sense. Make the story board interacticve.
+The first page of the story board will have high level observations and summaries. (Executive Summary)
+The second page would have (Monthly Traffic Analysis) where I can switch between which stories I want to see
+ UL/DL ratio should not be showed with Data Consumption Trens. Instead show Uplink vs Downlink story. Here in the graph show the uplink and downlink in charts.
+For 4G vs 5G show the trend of 4G and 5G in two different charts in absolute values view. and show the percentage chart which is currently shown in percentage view. Initially two more cards were used in executive summary that showed the insights about application type and device type, that is missing in current dashboard.
+Use this colour codes :
+"#FF3399", - pink
+"#C00000",-red
+"#0070C0",-blue
+"#FFC000",-yellow
+"#00B050",-green
+"#CC9900",-amber
+"#A6A6A6",- gray white and black are also allowed, create white backgrounds majorly
+And use rakuten Mobile logos. I am attaching the logo here.  Our story is centric to the current month, that is month of July. In application rankings and device types, I want you to show any significant change in rank for applications or devices. Mention by what percentage data consumption has increased. This is common for both of them. In executive summary I want two more cards, like what you have for Total growth and Daily 5G Traffic, that is one related to Application and one related to Device Type. make sure that in all of the graph plots the months come in ascending order. There may be some hallucinations in the graph, please fix that
+1. Traffic trend : Show month on month growth as bar graph (total_traffic from the table). And then plot total _dl_vol, total_ul_vol. Percentage view will have percentage growth.
+2. Replace Infrastructure Analysis with Miscellenious trends.
+  Please use real data that I provide. As csv for the graphs, dont hallucinate.  You should also some critical thinking, future trends, suggestions to get more network activity.  I will make two specifications for Executive summary, Only 2 cards to be shown that will have Total Traffic Growth. And Normalized traffic growth.  Where in each of the cards you also need to show the graph.  Below these big cards, there will be rows of 3 cards each. they will also have a summary and some graphs. the details of the six cards are as follows: Device : Line chart of Ranks of different device types Application Type : Line Chart of ranks of different application types
+User : MVNO, b2b,b2c trends
+Network : Traffic for different cell types ( data not yet retrieved)
+Kddi : KDDI traffic trends
+IR : IR traffic trends  

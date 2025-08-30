@@ -17,7 +17,7 @@ app.get('/api/traffic', async (req, res) => {
         m.delta_percentage
       FROM ul_dl_traffic_data u
       JOIN monthly_traffic_data m ON u.agg_year = m.year AND u.agg_month = m.month
-      ORDER BY year, month
+      ORDER BY u.agg_year ASC, u.agg_month ASC
     `;
     res.json(data);
   } catch (error) {

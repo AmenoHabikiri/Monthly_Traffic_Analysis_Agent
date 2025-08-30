@@ -78,7 +78,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           title="Month on month Traffic Growth"
           subtitle="Month-over-month progression"
           value={summary?.totalTrafficJuly ? (summary.totalTrafficJuly / 1000000).toFixed(1) : "0"}
-          unit="GB (July)"
+          unit="PB (July)"
           trend={summary?.growthRate ? `+${summary.growthRate.toFixed(1)}%` : "+0%"}
           trendDirection="up"
           icon={<TrendingUp className="text-secondary text-xl" />}
@@ -98,7 +98,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           title="Normalized Traffic Growth"
           subtitle="Daily average traffic per month"
           value={summary?.normalizedTrafficJuly ? (summary.normalizedTrafficJuly / 1000000).toFixed(2) : "0"}
-          unit="GB/day"
+          unit="PB/day"
           trend={summary?.normalizedGrowthRate ? `+${summary.normalizedGrowthRate.toFixed(1)}%` : "+6.35%"}
           trendDirection="up"
           icon={<Zap className="text-accent text-xl" />}

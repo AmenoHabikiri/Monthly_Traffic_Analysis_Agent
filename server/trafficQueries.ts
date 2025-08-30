@@ -1,7 +1,7 @@
 import { db } from './database';
 
 export interface TrafficGrowthData {
-  month: number;
+  month: string;
   year: number;
   totalTraffic: number;
   normalizedTraffic: number;
@@ -19,28 +19,29 @@ export async function getTrafficGrowthData(): Promise<TrafficGrowthData[]> {
     console.log('📊 DB - Executing your actual query...');
     const result = await db`
       SELECT 
-        u.agg_year AS year,
-        u.agg_month AS month,
-        u.total_dl_vol_gb_monthly AS total_dl_traffic,
-        u.total_ul_vol_gb_monthly AS total_ul_traffic,
-        u.total_traffic,
-        u.dl_ul_ratio AS ul_dl_ratio,
-        m.total_normalized_traffic,
-        m.delta_percentage
-      FROM ul_dl_traffic_data u
-      JOIN monthly_traffic_data m
-        ON u.agg_year = m.year
-        AND u.agg_month = m.month
+    u.agg_year AS year,
+    TRIM(TO_CHAR(TO_DATE(u.agg_month::text, 'MM'), 'Month')) AS month,
+    u.total_dl_vol_gb_monthly AS total_dl_traffic,
+    u.total_ul_vol_gb_monthly AS total_ul_traffic,
+    u.total_traffic,
+    u.dl_ul_ratio AS ul_dl_ratio,
+    m.total_normalized_traffic,
+    m.delta_percentage
+FROM ul_dl_traffic_data u
+JOIN monthly_traffic_data m
+    ON u.agg_year = m.year
+   AND u.agg_month = m.month;
+
     `;
     
     console.log('📊 DB - Raw query result:', result);
     
     const mappedResult = result.map((row: any) => ({
       year: parseInt(row.year),
-      month: parseInt(row.month),
-      totalTraffic: parseFloat(row.total_traffic),
-      normalizedTraffic: parseFloat(row.total_normalized_traffic),
-      deltaPercentage: parseFloat(row.delta_percentage)
+      month: row.month, // Keep as string now
+      totalTraffic: parseFloat(row.total_traffic || 0),
+      normalizedTraffic: parseFloat(row.total_normalized_traffic || 0),
+      deltaPercentage: row.delta_percentage ? parseFloat(row.delta_percentage) : null
     }));
     
     console.log('📊 DB - Mapped result:', mappedResult);

@@ -41,29 +41,98 @@
         fetch('/api/traffic')
             .then(res => res.json())
             .then(data => {
+                // Double-check sorting by year and month in ascending order
+                const sortedData = data.sort((a, b) => {
+                    if (a.year !== b.year) return parseInt(a.year) - parseInt(b.year);
+                    return parseInt(a.month) - parseInt(b.month);
+                });
+                
+                console.log('Sorted data:', sortedData.map(d => `${d.year}-${d.month}`));
+                
                 const ctx = document.getElementById('trafficChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.map(d => `${d.year}-${d.month.toString().padStart(2, '0')}`),
+                        labels: sortedData.map(d => `Month ${d.month.toString().padStart(2, '0')}`),
                         datasets: [{
                             label: 'Total Traffic (GB)',
-                            data: data.map(d => d.total_traffic / 1000000),
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1
+                            data: sortedData.map(d => ({
+                                x: `Month ${d.month.toString().padStart(2, '0')}`,
+                                y: d.total_traffic / 1000000,
+                                raw: d // Store original data for tooltip
+                            })),
+                            borderColor: '#e60012',
+                            backgroundColor: 'rgba(230, 0, 18, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#e60012',
+                            tension: 0.4,
+                            parsing: {
+                                xAxisKey: 'x',
+                                yAxisKey: 'y'
+                            }
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Monthly Traffic Growth',
+                                font: { size: 16, weight: 'bold' }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        const dataPoint = context[0].raw;
+                                        return `${dataPoint.raw.year} - Month ${dataPoint.raw.month.toString().padStart(2, '0')}`;
+                                    },
+                                    label: function(context) {
+                                        const dataPoint = context.raw;
+                                        const data = dataPoint.raw;
+                                        return [
+                                            `Total Traffic: ${(data.total_traffic / 1000000).toFixed(2)} GB`,
+                                            `Normalized Traffic: ${(data.normalized_traffic / 1000000).toFixed(2)} GB/day`,
+                                            `Growth Rate: ${data.delta_percentage ? data.delta_percentage.toFixed(2) + '%' : 'N/A'}`,
+                                            `Year: ${data.year}`,
+                                            `Month: ${data.month}`
+                                        ];
+                                    }
+                                },
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: '#e60012',
+                                borderWidth: 2
+                            }
+                        },
                         scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Month',
+                                    font: { size: 14 }
+                                },
+                                grid: { display: false }
+                            },
                             y: {
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: 'Traffic (GB)'
-                                }
+                                    text: 'Traffic (GB)',
+                                    font: { size: 14 }
+                                },
+                                grid: { color: '#f0f0f0' }
                             }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart'
                         }
                     }
                 });

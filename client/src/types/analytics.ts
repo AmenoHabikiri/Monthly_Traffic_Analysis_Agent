@@ -1,6 +1,6 @@
 export interface TrafficMetrics {
   year: number;
-  month: number;
+  month: string;
   totalTraffic: number;
   normalizedTraffic: number;
   deltaPercentage: number | null;

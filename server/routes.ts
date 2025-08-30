@@ -1,15 +1,19 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { DatabaseStorage } from "./realStorage";
+
+// Use real database if DATABASE_URL is provided
+const realStorage = process.env.DATABASE_URL ? new DatabaseStorage() : storage;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize data from CSV files
-  await storage.initializeData();
+  await realStorage.initializeData();
 
   // Traffic data endpoints
   app.get("/api/traffic", async (req, res) => {
     try {
-      const data = await storage.getTrafficData();
+      const data = await realStorage.getTrafficData();
       res.json(data);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch traffic data" });
@@ -19,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Application data endpoints
   app.get("/api/applications", async (req, res) => {
     try {
-      const data = await storage.getApplicationData();
+      const data = await realStorage.getApplicationData();
       res.json(data);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch application data" });
@@ -29,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Device data endpoints
   app.get("/api/devices", async (req, res) => {
     try {
-      const data = await storage.getDeviceData();
+      const data = await realStorage.getDeviceData();
       res.json(data);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch device data" });
@@ -39,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Network metrics endpoints
   app.get("/api/network-metrics", async (req, res) => {
     try {
-      const data = await storage.getNetworkMetrics();
+      const data = await realStorage.getNetworkMetrics();
       res.json(data);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch network metrics" });
@@ -49,10 +53,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics summary endpoint
   app.get("/api/analytics/summary", async (req, res) => {
     try {
-      const traffic = await storage.getTrafficData();
-      const applications = await storage.getApplicationData();
-      const devices = await storage.getDeviceData();
-      const metrics = await storage.getNetworkMetrics();
+      const traffic = await realStorage.getTrafficData();
+      const applications = await realStorage.getApplicationData();
+      const devices = await realStorage.getDeviceData();
+      const metrics = await realStorage.getNetworkMetrics();
       
       const julyTraffic = traffic.find(t => t.month === 7);
       const juneTraffic = traffic.find(t => t.month === 6);

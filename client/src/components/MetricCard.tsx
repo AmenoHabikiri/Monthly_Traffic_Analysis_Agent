@@ -46,7 +46,7 @@ export default function MetricCard({
             {value}
           </span>
           <span className="text-lg text-muted-foreground">{unit}</span>
-          <span className={`bg-secondary/10 ${trendColor} px-2 py-1 rounded-full text-sm font-medium flex items-center`}>
+          <span className={`bg-secondary/10 px-2 py-1 rounded-full text-sm font-medium flex items-center ${trendColor}`}>
             <TrendIcon className="mr-1 h-3 w-3" />
             {trend}
           </span>

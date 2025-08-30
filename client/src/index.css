@@ -69,6 +69,14 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  
+  html {
+    color-scheme: light;
+  }
+  
+  html.dark {
+    color-scheme: dark;
+  }
 }
 
 @layer components {
@@ -105,11 +113,15 @@
   }
   
   .rakuten-gradient {
-    @apply bg-gradient-to-br from-rakuten-blue to-rakuten-pink;
+    background: linear-gradient(to bottom right, hsl(var(--rakuten-blue)), hsl(var(--rakuten-pink)));
   }
   
   .chart-container {
-    @apply relative h-48 w-full;
+    @apply relative h-48 w-full min-h-48;
+  }
+  
+  .chart-container > div {
+    @apply h-full w-full;
   }
   
   .large-chart-container {

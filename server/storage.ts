@@ -41,7 +41,7 @@ export class MemStorage implements IStorage {
 
   async insertTrafficData(insertData: InsertTrafficData): Promise<TrafficData> {
     const id = randomUUID();
-    const data: TrafficData = { ...insertData as any, id };
+    const data: TrafficData = { ...insertData, id };
     this.trafficData.set(id, data);
     return data;
   }
@@ -52,7 +52,7 @@ export class MemStorage implements IStorage {
 
   async insertApplicationData(insertData: InsertApplicationData): Promise<ApplicationData> {
     const id = randomUUID();
-    const data: ApplicationData = { ...insertData as any, id };
+    const data: ApplicationData = { ...insertData, id };
     this.applicationData.set(id, data);
     return data;
   }
@@ -63,7 +63,7 @@ export class MemStorage implements IStorage {
 
   async insertDeviceData(insertData: InsertDeviceData): Promise<DeviceData> {
     const id = randomUUID();
-    const data: DeviceData = { ...insertData as any, id };
+    const data: DeviceData = { ...insertData, id };
     this.deviceData.set(id, data);
     return data;
   }
@@ -74,7 +74,7 @@ export class MemStorage implements IStorage {
 
   async insertNetworkMetrics(insertData: InsertNetworkMetrics): Promise<NetworkMetrics> {
     const id = randomUUID();
-    const data: NetworkMetrics = { ...insertData as any, id };
+    const data: NetworkMetrics = { ...insertData, id };
     this.networkMetrics.set(id, data);
     return data;
   }

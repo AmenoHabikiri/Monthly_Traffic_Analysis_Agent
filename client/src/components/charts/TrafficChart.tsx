@@ -1,6 +1,13 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import type { TrafficMetrics } from '@/types/analytics';
-import { RAKUTEN_COLORS, MONTHS } from '@/data/csvData';
+import { MONTHS } from '@/data/csvData';
+
+const CHART_COLORS = {
+  pink: 'hsl(327, 100%, 60%)',
+  blue: 'hsl(207, 89%, 56%)',
+  green: 'hsl(139, 61%, 35%)',
+  yellow: 'hsl(48, 100%, 50%)'
+};
 
 interface TrafficChartProps {
   data: TrafficMetrics[];
@@ -40,8 +47,8 @@ export default function TrafficChart({ data, type, isPercentageView }: TrafficCh
           />
           <Bar 
             dataKey="value" 
-            fill={RAKUTEN_COLORS.pink}
-            stroke={RAKUTEN_COLORS.pink}
+            fill={CHART_COLORS.pink}
+            stroke={CHART_COLORS.pink}
             strokeWidth={2}
             radius={[4, 4, 0, 0]}
           />
@@ -71,10 +78,10 @@ export default function TrafficChart({ data, type, isPercentageView }: TrafficCh
         <Line 
           type="monotone" 
           dataKey="value" 
-          stroke={RAKUTEN_COLORS.blue}
+          stroke={CHART_COLORS.blue}
           strokeWidth={3}
-          dot={{ fill: RAKUTEN_COLORS.blue, strokeWidth: 2, r: 4 }}
-          activeDot={{ r: 6, stroke: RAKUTEN_COLORS.blue, strokeWidth: 2 }}
+          dot={{ fill: CHART_COLORS.blue, strokeWidth: 2, r: 4 }}
+          activeDot={{ r: 6, stroke: CHART_COLORS.blue, strokeWidth: 2 }}
         />
       </LineChart>
     </ResponsiveContainer>

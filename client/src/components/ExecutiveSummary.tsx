@@ -12,11 +12,11 @@ interface ExecutiveSummaryProps {
 }
 
 export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryProps) {
-  const { data: summary, isLoading: summaryLoading } = useQuery<AnalyticsSummary>({
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useQuery<AnalyticsSummary>({
     queryKey: ['/api/analytics/summary']
   });
 
-  const { data: trafficData, isLoading: trafficLoading } = useQuery<TrafficMetrics[]>({
+  const { data: trafficData, isLoading: trafficLoading, error: trafficError } = useQuery<TrafficMetrics[]>({
     queryKey: ['/api/traffic']
   });
 
@@ -31,6 +31,14 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
   const { data: networkMetrics } = useQuery<NetworkMetrics[]>({
     queryKey: ['/api/network-metrics']
   });
+
+  if (summaryError || trafficError) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Error loading data. Please try again.</p>
+      </div>
+    );
+  }
 
   if (summaryLoading || trafficLoading) {
     return (
@@ -50,7 +58,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
 
   const fiveGMetrics = networkMetrics?.filter(m => m.month === 7 && m.factor === 'total_5g_data_daily')[0];
   const fourGMetrics = networkMetrics?.filter(m => m.month === 7 && m.factor === 'total_4g_data_daily')[0];
-  const fiveGSharePercent = fiveGMetrics && fourGMetrics ? 
+  const fiveGSharePercent = fiveGMetrics && fourGMetrics && (fiveGMetrics.value + fourGMetrics.value) > 0 ? 
     ((fiveGMetrics.value / (fiveGMetrics.value + fourGMetrics.value)) * 100) : 0;
 
   return (
@@ -83,7 +91,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           subtitle="Daily average traffic per month"
           value={summary?.normalizedTrafficJuly ? (summary.normalizedTrafficJuly / 1000000).toFixed(2) : "0"}
           unit="GB/day"
-          trend="+6.35%"
+          trend={summary?.normalizedGrowthRate ? `+${summary.normalizedGrowthRate.toFixed(1)}%` : "+6.35%"}
           trendDirection="up"
           icon={<Zap className="text-accent text-xl" />}
           data-testid="card-normalized-traffic"
@@ -110,7 +118,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           <div className="space-y-3">
             {applications?.filter(app => app.month === 7).slice(0, 3).map((app, index) => {
               const juneApp = applications.find(a => a.application === app.application && a.month === 6);
-              const growth = juneApp ? 
+              const growth = juneApp && juneApp.dataVolume > 0 ? 
                 ((app.dataVolume - juneApp.dataVolume) / juneApp.dataVolume * 100) : 0;
               
               return (
@@ -135,7 +143,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           <div className="space-y-3">
             {devices?.filter(device => device.month === 7).slice(0, 3).map((device, index) => {
               const juneDevice = devices.find(d => d.device === device.device && d.month === 6);
-              const growth = juneDevice ? 
+              const growth = juneDevice && juneDevice.dataVolume > 0 ? 
                 ((device.dataVolume - juneDevice.dataVolume) / juneDevice.dataVolume * 100) : 0;
               
               return (

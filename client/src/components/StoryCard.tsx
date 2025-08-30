@@ -26,7 +26,7 @@ export default function StoryCard({
       variant="ghost"
       className={cn(
         "story-card h-auto p-0 justify-start",
-        isActive && "active-story",
+        isActive ? "active-story" : "",
         className
       )}
       onClick={onClick}

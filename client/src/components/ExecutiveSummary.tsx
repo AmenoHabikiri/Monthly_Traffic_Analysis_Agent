@@ -15,10 +15,18 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useQuery<AnalyticsSummary>({
     queryKey: ['/api/analytics/summary']
   });
+  
+  console.log('🔍 Frontend - Summary data:', summary);
+  console.log('🔍 Frontend - Summary loading:', summaryLoading);
+  console.log('🔍 Frontend - Summary error:', summaryError);
 
   const { data: trafficData, isLoading: trafficLoading, error: trafficError } = useQuery<TrafficMetrics[]>({
     queryKey: ['/api/traffic']
   });
+  
+  console.log('🚗 Frontend - Traffic data:', trafficData);
+  console.log('🚗 Frontend - Traffic loading:', trafficLoading);
+  console.log('🚗 Frontend - Traffic error:', trafficError);
 
   const { data: applications } = useQuery<ApplicationMetrics[]>({
     queryKey: ['/api/applications']

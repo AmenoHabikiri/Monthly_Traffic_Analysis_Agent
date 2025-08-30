@@ -18,9 +18,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: {
-      "/api": "http://localhost:5000", // proxy API requests to your Express server
-    },
   },
   build: {
     outDir: path.resolve(__dirname, "dist/public"),

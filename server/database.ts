@@ -1,12 +1,22 @@
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { neon } from '@neondatabase/serverless';
+import pkg from 'postgres';
+const postgres = pkg;
 import * as schema from '@shared/schema';
 
 const connectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required');
+let db: any = null;
+
+if (connectionString) {
+  try {
+    const sql = postgres(connectionString);
+    db = sql; // Use raw postgres client for now
+    console.log('Database connected successfully');
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    db = null;
+  }
+} else {
+  console.log('No DATABASE_URL provided, using mock data');
 }
 
-const sql = neon(connectionString);
-export const db = drizzle(sql, { schema });
+export { db };

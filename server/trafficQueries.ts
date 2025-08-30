@@ -16,13 +16,35 @@ export async function getTrafficGrowthData(): Promise<TrafficGrowthData[]> {
   }
 
   try {
-    // Return mock data for now to test the flow
-    console.log('📊 DB - Returning mock traffic data');
-    return [
-      { month: 5, year: 2025, totalTraffic: 242164818, normalizedTraffic: 7811768, deltaPercentage: null },
-      { month: 6, year: 2025, totalTraffic: 234641470, normalizedTraffic: 7821382, deltaPercentage: 0.12 },
-      { month: 7, year: 2025, totalTraffic: 257859685, normalizedTraffic: 8318054, deltaPercentage: 6.35 }
-    ];
+    console.log('📊 DB - Executing your actual query...');
+    const result = await db`
+      SELECT 
+        u.agg_year AS year,
+        u.agg_month AS month,
+        u.total_dl_vol_gb_monthly AS total_dl_traffic,
+        u.total_ul_vol_gb_monthly AS total_ul_traffic,
+        u.total_traffic,
+        u.dl_ul_ratio AS ul_dl_ratio,
+        m.total_normalized_traffic,
+        m.delta_percentage
+      FROM ul_dl_traffic_data u
+      JOIN monthly_traffic_data m
+        ON u.agg_year = m.year
+        AND u.agg_month = m.month
+    `;
+    
+    console.log('📊 DB - Raw query result:', result);
+    
+    const mappedResult = result.map((row: any) => ({
+      year: parseInt(row.year),
+      month: parseInt(row.month),
+      totalTraffic: parseFloat(row.total_traffic),
+      normalizedTraffic: parseFloat(row.total_normalized_traffic),
+      deltaPercentage: parseFloat(row.delta_percentage)
+    }));
+    
+    console.log('📊 DB - Mapped result:', mappedResult);
+    return mappedResult;
   } catch (error) {
     console.error('📊 DB - Traffic query error:', error);
     throw error;
@@ -37,25 +59,25 @@ export async function getTrafficSummary() {
   }
 
   try {
-    // Test basic connection first
-    console.log('📊 DB - Testing connection...');
-    await db`SELECT 1 as test`;
-    console.log('📊 DB - Connection test passed');
-    
-    // Check if tables exist
-    console.log('📊 DB - Checking tables...');
-    const tables = await db`
-      SELECT table_name FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name IN ('ul_dl_traffic_data', 'monthly_traffic_data')
+    const result = await db`
+      SELECT 
+        SUM(CASE WHEN m.month = 7 THEN u.total_traffic ELSE 0 END) as july_traffic,
+        SUM(CASE WHEN m.month = 6 THEN u.total_traffic ELSE 0 END) as june_traffic,
+        AVG(CASE WHEN m.month = 7 THEN m.total_normalized_traffic ELSE NULL END) as july_normalized
+      FROM ul_dl_traffic_data u
+      JOIN monthly_traffic_data m ON u.agg_year = m.year AND u.agg_month = m.month
+      WHERE m.month IN (6, 7)
     `;
-    console.log('📊 DB - Available tables:', tables);
-    
-    // Return mock data for now
+
+    const row = result[0];
+    const julyTraffic = parseFloat(row.july_traffic || 0);
+    const juneTraffic = parseFloat(row.june_traffic || 0);
+    const growthRate = juneTraffic > 0 ? ((julyTraffic - juneTraffic) / juneTraffic) * 100 : 0;
+
     return {
-      totalTrafficJuly: 257859685,
-      normalizedTrafficJuly: 8318054,
-      growthRate: 6.35
+      totalTrafficJuly: julyTraffic,
+      normalizedTrafficJuly: parseFloat(row.july_normalized || 0),
+      growthRate: growthRate
     };
   } catch (error) {
     console.error('📊 DB - Query error:', error);

@@ -75,7 +75,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Total Traffic Growth Card */}
         <MetricCard
-          title="Total Traffic Growth"
+          title="Month on month Traffic Growth"
           subtitle="Month-over-month progression"
           value={summary?.totalTrafficJuly ? (summary.totalTrafficJuly / 1000000).toFixed(1) : "0"}
           unit="GB (July)"

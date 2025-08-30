@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Traffic Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .metric { font-size: 24px; font-weight: bold; color: #333; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Rakuten Analytics Dashboard</h1>
+    
+    <div class="card">
+        <h3>Traffic Summary</h3>
+        <div id="summary">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h3>Monthly Traffic Growth</h3>
+        <div class="chart-container">
+            <canvas id="trafficChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display summary
+        fetch('/api/summary')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('summary').innerHTML = `
+                    <div class="metric">July Traffic: ${(data.julyTraffic / 1000000).toFixed(1)} GB</div>
+                    <div class="metric">Growth Rate: ${data.growthRate.toFixed(1)}%</div>
+                `;
+            })
+            .catch(err => console.error('Summary error:', err));
+
+        // Fetch and display chart
+        fetch('/api/traffic')
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => `${d.year}-${d.month.toString().padStart(2, '0')}`),
+                        datasets: [{
+                            label: 'Total Traffic (GB)',
+                            data: data.map(d => d.total_traffic / 1000000),
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Traffic (GB)'
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Chart error:', err));
+    </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Zap, Building } from "lucide-react";
 import MetricCard from "./MetricCard";
 import InsightCard from "./InsightCard";
 import TrafficChart from "./charts/TrafficChart";
+import RoamingChart from "./charts/RoamingChart";
 import type { AnalyticsSummary, TrafficMetrics, ApplicationMetrics, DeviceMetrics, NetworkMetrics } from "@/types/analytics";
 
 interface ExecutiveSummaryProps {
@@ -38,6 +39,19 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
 
   const { data: networkMetrics } = useQuery<NetworkMetrics[]>({
     queryKey: ['/api/network-metrics']
+  });
+
+  const { data: roamingData } = useQuery<{
+    irRoaming: Array<{month: string; year: number; value: number; factor: string}>;
+    kddiRoaming: Array<{month: string; year: number; value: number; factor: string}>;
+    fiveGData: Array<{month: string; year: number; value: number; factor: string}>;
+    fourGData: Array<{month: string; year: number; value: number; factor: string}>;
+  }>({
+    queryKey: ['/api/roaming']
+  });
+
+  const { data: prefectures } = useQuery<Array<{prefecture: string; dataVolume: number}>>({
+    queryKey: ['/api/prefectures']
   });
 
   if (summaryError || trafficError) {
@@ -77,9 +91,9 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
         <MetricCard
           title="Month on month Traffic Growth"
           subtitle="Month-over-month progression"
-          value={summary?.totalTrafficJuly ? (summary.totalTrafficJuly / 1000000).toFixed(1) : "0"}
+          value={summary?.totalTrafficJuly ? (summary.totalTrafficJuly / 1000000).toFixed(2) : "0"}
           unit="PB (July)"
-          trend={summary?.growthRate ? `+${summary.growthRate.toFixed(1)}%` : "+0%"}
+          trend={summary?.growthRate ? `+${summary.growthRate.toFixed(2)}%` : "+0%"}
           trendDirection="up"
           icon={<TrendingUp className="text-secondary text-xl" />}
           data-testid="card-total-traffic"
@@ -99,7 +113,7 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
           subtitle="Daily average traffic per month"
           value={summary?.normalizedTrafficJuly ? (summary.normalizedTrafficJuly / 1000000).toFixed(2) : "0"}
           unit="PB/day"
-          trend={summary?.normalizedGrowthRate ? `+${summary.normalizedGrowthRate.toFixed(1)}%` : "+6.35%"}
+          trend={summary?.normalizedGrowthRate ? `+${summary.normalizedGrowthRate.toFixed(2)}%` : "+6.35%"}
           trendDirection="up"
           icon={<Zap className="text-accent text-xl" />}
           data-testid="card-normalized-traffic"
@@ -119,88 +133,148 @@ export default function ExecutiveSummary({ isPercentageView }: ExecutiveSummaryP
         {/* Application Insights */}
         <InsightCard
           title="Top Applications"
-          subtitle="July performance"
+          subtitle="June to July growth"
           icon={<Building className="text-primary" />}
           data-testid="card-application-insights"
         >
           <div className="space-y-3">
-            {applications?.filter(app => app.month === 7).slice(0, 3).map((app, index) => {
-              const juneApp = applications.find(a => a.application === app.application && a.month === 6);
-              const growth = juneApp && juneApp.dataVolume > 0 ? 
-                ((app.dataVolume - juneApp.dataVolume) / juneApp.dataVolume * 100) : 0;
-              
-              return (
-                <div key={app.application} className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{app.application}</span>
-                  <span className="text-sm text-secondary font-semibold">
-                    +{growth.toFixed(1)}%
-                  </span>
-                </div>
-              );
-            })}
+            {applications?.slice(0, 5).map((app, index) => (
+              <div key={app.application} className="flex justify-between items-center">
+                <span className="text-sm font-medium">{app.application}</span>
+                <span className="text-sm text-secondary font-semibold">
+                  {app.growthPercentage !== null ? `+${app.growthPercentage.toFixed(2)}%` : 'N/A'}
+                </span>
+              </div>
+            ))}
           </div>
         </InsightCard>
 
         {/* Device Insights */}
         <InsightCard
           title="Top Devices"
-          subtitle="Market leaders"
+          subtitle="May to June growth"
           icon={<Building className="text-yellow-600" />}
           data-testid="card-device-insights"
         >
           <div className="space-y-3">
-            {devices?.filter(device => device.month === 7).slice(0, 3).map((device, index) => {
-              const juneDevice = devices.find(d => d.device === device.device && d.month === 6);
-              const growth = juneDevice && juneDevice.dataVolume > 0 ? 
-                ((device.dataVolume - juneDevice.dataVolume) / juneDevice.dataVolume * 100) : 0;
-              
-              return (
-                <div key={device.device} className="flex justify-between items-center">
-                  <span className="text-sm font-medium">
-                    {device.device.replace(/\s*\([^)]*\)/g, '').substring(0, 15)}...
-                  </span>
-                  <span className={`text-sm font-semibold ${
-                    growth > 0 ? 'text-secondary' : 'text-destructive'
-                  }`}>
-                    {growth > 0 ? '+' : ''}{growth.toFixed(1)}%
-                  </span>
-                </div>
-              );
-            })}
+            {devices?.slice(0, 5).map((device, index) => (
+              <div key={device.device} className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  {device.device.split('(')[0].trim()}
+                </span>
+                <span className={`text-sm font-semibold ${
+                  device.growthPercentage && device.growthPercentage > 0 ? 'text-secondary' : 'text-destructive'
+                }`}>
+                  {device.growthPercentage !== null ? 
+                    `${device.growthPercentage > 0 ? '+' : ''}${device.growthPercentage.toFixed(2)}%` : 
+                    'N/A'
+                  }
+                </span>
+              </div>
+            ))}
           </div>
         </InsightCard>
 
         {/* Network Performance */}
         <InsightCard
-          title="5G Performance"
-          subtitle="Network evolution"
-          icon={<TrendingUp className="text-secondary" />}
-          data-testid="card-network-performance"
+          title="Top Prefectures"
+          subtitle="Regional leaders"
+          icon={<Building className="text-green-600" />}
+          data-testid="card-prefecture-insights"
         >
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">5G Share</span>
-              <span className="text-sm text-secondary font-semibold">
-                {fiveGSharePercent.toFixed(1)}%
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Daily 5G Traffic</span>
-              <span className="text-sm text-secondary font-semibold">
-                {fiveGMetrics ? (fiveGMetrics.value / 1000000).toFixed(2) : '0'} GB
-              </span>
-            </div>
-            <div className="w-full bg-muted/20 rounded-full h-2">
-              <div 
-                className="bg-secondary h-2 rounded-full transition-all duration-1000" 
-                style={{ width: `${fiveGSharePercent}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {fiveGSharePercent.toFixed(1)}% of total traffic
-            </p>
+            {prefectures?.slice(0, 5).map((prefecture, index) => (
+              <div key={prefecture.prefecture} className="flex justify-between items-center">
+                <span className="text-sm font-medium">{prefecture.prefecture}</span>
+                <span className="text-sm text-secondary font-semibold">
+                  {prefecture.dataVolume.toFixed(2)} GB
+                </span>
+              </div>
+            ))}
           </div>
         </InsightCard>
+      </div>
+
+      {/* Network Performance Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 5G Performance Card */}
+        <MetricCard
+          title="5G Performance"
+          subtitle="Daily traffic trend"
+          value={roamingData?.fiveGData?.slice(-1)[0]?.value?.toFixed(2) || "0"}
+          unit="PB"
+          trend=""
+          trendDirection="up"
+          icon={<TrendingUp className="text-yellow-600 text-xl" />}
+          data-testid="card-5g-performance"
+        >
+          <div className="chart-container">
+            <RoamingChart 
+              data={roamingData?.fiveGData || []} 
+              type="total_5g_data_daily"
+            />
+          </div>
+        </MetricCard>
+
+        {/* 4G Performance Card */}
+        <MetricCard
+          title="4G Performance"
+          subtitle="Daily traffic trend"
+          value={roamingData?.fourGData?.slice(-1)[0]?.value?.toFixed(2) || "0"}
+          unit="PB"
+          trend=""
+          trendDirection="up"
+          icon={<TrendingUp className="text-amber-600 text-xl" />}
+          data-testid="card-4g-performance"
+        >
+          <div className="chart-container">
+            <RoamingChart 
+              data={roamingData?.fourGData || []} 
+              type="total_4g_data_daily"
+            />
+          </div>
+        </MetricCard>
+      </div>
+
+      {/* Roaming Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* International Roaming Card */}
+        <MetricCard
+          title="International Roaming"
+          subtitle="Monthly trend"
+          value={roamingData?.irRoaming?.slice(-1)[0]?.value?.toFixed(2) || "0"}
+          unit="TB"
+          trend=""
+          trendDirection="up"
+          icon={<TrendingUp className="text-green-600 text-xl" />}
+          data-testid="card-ir-roaming"
+        >
+          <div className="chart-container">
+            <RoamingChart 
+              data={roamingData?.irRoaming || []} 
+              type="IR_Roaming"
+            />
+          </div>
+        </MetricCard>
+
+        {/* KDDI Roaming Card */}
+        <MetricCard
+          title="KDDI Roaming"
+          subtitle="Monthly trend"
+          value={roamingData?.kddiRoaming?.slice(-1)[0]?.value?.toFixed(1) || "0"}
+          unit="TB"
+          trend=""
+          trendDirection="up"
+          icon={<TrendingUp className="text-blue-600 text-xl" />}
+          data-testid="card-kddi-roaming"
+        >
+          <div className="chart-container">
+            <RoamingChart 
+              data={roamingData?.kddiRoaming || []} 
+              type="KDDI_Roaming"
+            />
+          </div>
+        </MetricCard>
       </div>
 
       {/* Key Observations */}

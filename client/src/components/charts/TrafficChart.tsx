@@ -65,9 +65,9 @@ export default function TrafficChart({ data, type, isPercentageView }: TrafficCh
     const { value } = props;
     if (!value && value !== 0) return '';
     if (isPercentageView) {
-      return `${Number(value).toFixed(1)}%`;
+      return `${Number(value).toFixed(2)}%`;
     }
-    return `${Number(value).toFixed(1)} ${type === 'total' ? 'GB' : 'GB/day'}`;
+    return `${Number(value).toFixed(2)} ${type === 'total' ? 'GB' : 'GB/day'}`;
   };
 
   if (type === 'normalized') {

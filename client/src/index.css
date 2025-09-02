@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rakuten+Sans:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -36,7 +36,7 @@
   --rakuten-amber: hsl(37, 86%, 40%);
   --rakuten-gray: hsl(0, 0%, 65%);
   --radius: 0.75rem;
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Rakuten Sans', sans-serif;
 }
 
 .dark {
@@ -106,6 +106,10 @@
   
   .trend-up {
     @apply text-secondary;
+  }
+  
+  .positive-percentage {
+    color: hsl(var(--rakuten-green));
   }
   
   .trend-down {

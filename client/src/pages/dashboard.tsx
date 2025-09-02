@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Smartphone, BarChart, Percent } from "lucide-react";
 import ExecutiveSummary from "@/components/ExecutiveSummary";
 import MonthlyAnalysis from "@/components/MonthlyAnalysis";
+import { RAKUTEN_COLORS } from "@/data/csvData";
 
 export default function Dashboard() {
   const [isPercentageView, setIsPercentageView] = useState(false);
@@ -26,7 +27,7 @@ export default function Dashboard() {
                   <Smartphone className="text-white text-lg" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Rakuten Mobile</h1>
+                  <h1 className="text-xl font-bold" style={{ color: RAKUTEN_COLORS.pink }}>Rakuten Mobile</h1>
                   <p className="text-xs text-muted-foreground">Data Analytics Dashboard</p>
                 </div>
               </div>

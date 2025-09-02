@@ -9,12 +9,14 @@ import {
   Calendar, 
   Signal, 
   Building2, 
-  PieChart 
+  PieChart,
+  Layers 
 } from "lucide-react";
 import StoryCard from "./StoryCard";
 import { STORY_NAVIGATION } from "@/data/csvData";
 import TrafficStory from "./stories/TrafficStory";
 import ApplicationsStory from "./stories/ApplicationsStory";
+import ApplicationTypesStory from "./stories/ApplicationTypesStory";
 import DevicesStory from "./stories/DevicesStory";
 import UplinkDownlinkStory from "./stories/UplinkDownlinkStory";
 import HolidayWorkdayStory from "./stories/HolidayWorkdayStory";
@@ -30,6 +32,7 @@ interface MonthlyAnalysisProps {
 const iconMap = {
   'chart-line': TrendingUp,
   'mobile-alt': Smartphone,
+  'layers': Layers,
   'tablet-alt': TabletIcon,
   'exchange-alt': ArrowUpDown,
   'calendar-alt': Calendar,
@@ -47,6 +50,8 @@ export default function MonthlyAnalysis({ isPercentageView }: MonthlyAnalysisPro
         return <TrafficStory isPercentageView={isPercentageView} />;
       case 'applications':
         return <ApplicationsStory isPercentageView={isPercentageView} />;
+      case 'application-types':
+        return <ApplicationTypesStory isPercentageView={isPercentageView} />;
       case 'devices':
         return <DevicesStory isPercentageView={isPercentageView} />;
       case 'uplink-downlink':

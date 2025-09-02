@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { RAKUTEN_COLORS } from "@/data/csvData";
 
 interface MetricCardProps {
   title: string;
@@ -25,7 +26,7 @@ export default function MetricCard({
   'data-testid': testId
 }: MetricCardProps) {
   const TrendIcon = trendDirection === 'up' ? TrendingUp : TrendingDown;
-  const trendColor = trendDirection === 'up' ? 'text-secondary' : 'text-destructive';
+  const trendStyle = trendDirection === 'up' ? { color: RAKUTEN_COLORS.green } : { color: RAKUTEN_COLORS.red };
 
   return (
     <Card className="metric-card shadow-lg" data-testid={testId}>
@@ -46,7 +47,7 @@ export default function MetricCard({
             {value}
           </span>
           <span className="text-lg text-muted-foreground">{unit}</span>
-          <span className={`bg-secondary/10 px-2 py-1 rounded-full text-sm font-medium flex items-center ${trendColor}`}>
+          <span className="bg-secondary/10 px-2 py-1 rounded-full text-sm font-medium flex items-center" style={trendStyle}>
             <TrendIcon className="mr-1 h-3 w-3" />
             {trend}
           </span>

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { getTrafficGrowthData, getTrafficSummary, getDeviceData, getApplicationData, getRoamingData, getPrefectureData, get5G4GGrowth } from "./trafficQueries";
+import { getTrafficGrowthData, getTrafficSummary, getDeviceData, getApplicationData, getRoamingData, getPrefectureData, getCellTypeData, getDeviceTypeTrends, get5G4GGrowth, getAllGrowthData } from "./trafficQueries";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // No mock data initialization
@@ -71,6 +71,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cell type data endpoints
+  app.get("/api/cell-types", async (req, res) => {
+    console.log('📡 API - /api/cell-types called');
+    try {
+      const data = await getCellTypeData();
+      console.log('📡 API - Cell type data result:', data);
+      res.json(data);
+    } catch (error) {
+      console.error('❌ API - Cell type data error:', error);
+      res.status(500).json({ message: "Failed to fetch cell type data" });
+    }
+  });
+
+  // Device type trends endpoints
+  app.get("/api/device-type-trends", async (req, res) => {
+    console.log('📱 API - /api/device-type-trends called');
+    try {
+      const data = await getDeviceTypeTrends();
+      console.log('📱 API - Device type trends result:', data);
+      res.json(data);
+    } catch (error) {
+      console.error('❌ API - Device type trends error:', error);
+      res.status(500).json({ message: "Failed to fetch device type trends data" });
+    }
+  });
+
   // Network metrics endpoints
   app.get("/api/network-metrics", async (req, res) => {
     try {
@@ -80,7 +106,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 5G/4G growth endpoint
+  // All growth data endpoint
+  app.get("/api/all-growth", async (req, res) => {
+    console.log('📶 API - /api/all-growth called');
+    try {
+      const data = await getAllGrowthData();
+      console.log('📶 API - All growth result:', data);
+      res.json(data);
+    } catch (error) {
+      console.error('❌ API - All growth error:', error);
+      res.status(500).json({ message: "Failed to fetch all growth data" });
+    }
+  });
+
+  // 5G/4G growth endpoint (backward compatibility)
   app.get("/api/5g-4g-growth", async (req, res) => {
     console.log('📶 API - /api/5g-4g-growth called');
     try {

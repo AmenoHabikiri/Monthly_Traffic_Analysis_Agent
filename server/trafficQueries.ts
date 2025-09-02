@@ -290,8 +290,8 @@ export async function getRoamingData() {
   }
 }
 
-export async function get5G4GGrowth() {
-  console.log('📶 DB - get5G4GGrowth called');
+export async function getAllGrowthData() {
+  console.log('📶 DB - getAllGrowthData called');
   
   if (!db) {
     throw new Error('Database not connected');
@@ -304,7 +304,7 @@ export async function get5G4GGrowth() {
         month_06_data as june_data,
         month_07_data as july_data
       FROM monthly_factor_data
-      WHERE factor IN ('total_5g_data_daily', 'total_4g_data_daily')
+      WHERE factor IN ('total_5g_data_daily', 'total_4g_data_daily', 'IR_Roaming', 'KDDI_Roaming')
     `;
     
     const growthData = result.map((row: any) => {
@@ -312,21 +312,106 @@ export async function get5G4GGrowth() {
       const julyData = parseFloat(row.july_data || 0);
       const growthRate = juneData > 0 ? ((julyData - juneData) / juneData) * 100 : 0;
       
+      // Convert units based on factor type
+      const isNetworkData = row.factor === 'total_5g_data_daily' || row.factor === 'total_4g_data_daily';
+      const divisor = isNetworkData ? 1000000 : 1000; // PB for 5G/4G, TB for roaming
+      
       return {
         factor: row.factor,
-        juneData: juneData / 1000000, // Convert to PB
-        julyData: julyData / 1000000, // Convert to PB
+        juneData: juneData / divisor,
+        julyData: julyData / divisor,
         growthPercentage: parseFloat(growthRate.toFixed(2))
       };
     });
     
     return {
       fiveG: growthData.find(item => item.factor === 'total_5g_data_daily') || null,
-      fourG: growthData.find(item => item.factor === 'total_4g_data_daily') || null
+      fourG: growthData.find(item => item.factor === 'total_4g_data_daily') || null,
+      irRoaming: growthData.find(item => item.factor === 'IR_Roaming') || null,
+      kddiRoaming: growthData.find(item => item.factor === 'KDDI_Roaming') || null
     };
   } catch (error) {
-    console.error('📶 DB - 5G/4G growth query error:', error);
+    console.error('📶 DB - All growth query error:', error);
     throw error;
+  }
+}
+
+export async function get5G4GGrowth() {
+  // Backward compatibility - calls the new function
+  const allData = await getAllGrowthData();
+  return {
+    fiveG: allData.fiveG,
+    fourG: allData.fourG
+  };
+}
+
+export async function getDeviceTypeTrends() {
+  console.log('📱 DB - getDeviceTypeTrends called');
+  
+  if (!db) {
+    throw new Error('Database not connected');
+  }
+
+  try {
+    const result = await db`
+      SELECT 
+        device,
+        TO_CHAR(TO_DATE(month::TEXT, 'MM'), 'Month') AS month_name,
+        year,
+        monthly_total_data_gb
+      FROM device_monthly_data_trend
+    `;
+    
+    return result.map((row: any) => ({
+      device: row.device,
+      monthName: row.month_name?.trim(),
+      year: parseInt(row.year),
+      monthlyTotalDataGb: parseFloat(row.monthly_total_data_gb || 0)
+    }));
+  } catch (error) {
+    console.error('📱 DB - Device type trends query error:', error);
+    const dummyData = [
+      { device: 'iPhone 15', monthName: 'May', year: 2025, monthlyTotalDataGb: 45.67 },
+      { device: 'iPhone 15', monthName: 'June', year: 2025, monthlyTotalDataGb: 52.34 },
+      { device: 'iPhone 15', monthName: 'July', year: 2025, monthlyTotalDataGb: 58.91 },
+      { device: 'Samsung Galaxy S24', monthName: 'May', year: 2025, monthlyTotalDataGb: 38.45 },
+      { device: 'Samsung Galaxy S24', monthName: 'June', year: 2025, monthlyTotalDataGb: 41.23 },
+      { device: 'Samsung Galaxy S24', monthName: 'July', year: 2025, monthlyTotalDataGb: 44.78 },
+      { device: 'WiFi Pocket', monthName: 'May', year: 2025, monthlyTotalDataGb: 32.12 },
+      { device: 'WiFi Pocket', monthName: 'June', year: 2025, monthlyTotalDataGb: 29.87 },
+      { device: 'WiFi Pocket', monthName: 'July', year: 2025, monthlyTotalDataGb: 27.45 }
+    ];
+    return dummyData;
+  }
+}
+
+export async function getCellTypeData() {
+  console.log('📡 DB - getCellTypeData called');
+  
+  if (!db) {
+    throw new Error('Database not connected');
+  }
+
+  try {
+    const result = await db`
+      SELECT type, growth_july_vs_june_percent
+      FROM cell_type_monthly_data
+    `;
+    
+    return result.map((row: any) => ({
+      type: row.type,
+      growthPercentage: parseFloat(row.growth_july_vs_june_percent || 0)
+    }));
+  } catch (error) {
+    console.error('📡 DB - Cell type query error:', error);
+    const dummyData = [
+      { type: 'Macro', growthPercentage: 14.23 },
+      { type: 'Small Cell', growthPercentage: 18.45 },
+      { type: 'Femto', growthPercentage: 7.89 },
+      { type: 'Pico', growthPercentage: 11.67 },
+      { type: 'Micro', growthPercentage: 9.34 }
+    ];
+    return dummyData;
   }
 }
 
@@ -339,29 +424,24 @@ export async function getPrefectureData() {
 
   try {
     const result = await db`
-      SELECT prefecture, data_volume
-      FROM prefecture_data
-      ORDER BY data_volume DESC
+      SELECT prefecture, growth_july_vs_june_percent
+      FROM prefecture_monthly_data
       LIMIT 5
     `;
     
     return result.map((row: any) => ({
       prefecture: row.prefecture,
-      dataVolume: parseFloat(row.data_volume || 0)
+      growthPercentage: parseFloat(row.growth_july_vs_june_percent || 0)
     }));
   } catch (error) {
     console.error('🗾 DB - Prefecture query error:', error);
     const dummyData = [
-      { prefecture: 'Tokyo', dataVolume: 45.67 },
-      { prefecture: 'Osaka', dataVolume: 32.45 },
-      { prefecture: 'Kanagawa', dataVolume: 28.91 },
-      { prefecture: 'Aichi', dataVolume: 24.33 },
-      { prefecture: 'Saitama', dataVolume: 21.78 }
+      { prefecture: 'Tokyo', growthPercentage: 12.45 },
+      { prefecture: 'Osaka', growthPercentage: 8.32 },
+      { prefecture: 'Kanagawa', growthPercentage: 15.67 },
+      { prefecture: 'Aichi', growthPercentage: 6.89 },
+      { prefecture: 'Saitama', growthPercentage: 9.23 }
     ];
-    const total = dummyData.reduce((sum, item) => sum + item.dataVolume, 0);
-    return dummyData.map(item => ({
-      prefecture: item.prefecture,
-      dataVolume: parseFloat(((item.dataVolume / total) * 100).toFixed(2))
-    }));
+    return dummyData;
   }
 }

@@ -45,6 +45,7 @@ export interface AnalyticsSummary {
 export type StoryType = 
   | 'traffic'
   | 'applications'
+  | 'application-types'
   | 'devices' 
   | 'uplink-downlink'
   | 'holiday-workday'

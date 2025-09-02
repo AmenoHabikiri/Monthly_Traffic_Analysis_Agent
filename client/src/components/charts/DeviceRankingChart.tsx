@@ -2,15 +2,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Lege
 import type { DeviceMetrics } from '@/types/analytics';
 import { RAKUTEN_COLORS, MONTHS } from '@/data/csvData';
 
-interface DeviceChartProps {
+interface DeviceRankingChartProps {
   data: DeviceMetrics[];
-  isPercentageView: boolean;
+  type: 'absolute' | 'percentage';
 }
 
-export default function DeviceChart({ data, isPercentageView }: DeviceChartProps) {
-  // Group data by device
+export default function DeviceRankingChart({ data, type }: DeviceRankingChartProps) {
+  // Group data by device and get top 10
   const deviceGroups = data.reduce((acc, item) => {
-    const shortName = item.device.replace(/\s*\([^)]*\)/g, '').substring(0, 20);
+    const shortName = item.device.replace(/\s*\([^)]*\)/g, '').substring(0, 15);
     if (!acc[shortName]) {
       acc[shortName] = [];
     }
@@ -18,23 +18,25 @@ export default function DeviceChart({ data, isPercentageView }: DeviceChartProps
     return acc;
   }, {} as Record<string, DeviceMetrics[]>);
 
-  // Get top 10 devices
   const topDevices = Object.keys(deviceGroups).slice(0, 10);
   
   // Create chart data
   const chartData = [5, 6, 7].map(month => {
     const monthData: any = { month: MONTHS[month - 5] };
     
-    topDevices.forEach((device, index) => {
+    topDevices.forEach(device => {
       const deviceData = deviceGroups[device]?.find(d => d.month === month);
       if (deviceData) {
-        if (isPercentageView && month > 5) {
-          const prevData = deviceGroups[device]?.find(d => d.month === month - 1);
-          if (prevData) {
-            monthData[device] = ((deviceData.dataVolume - prevData.dataVolume) / prevData.dataVolume * 100);
-          }
-        } else {
+        if (type === 'absolute') {
           monthData[device] = deviceData.dataVolume / 1000; // Convert to GB
+        } else {
+          // Get devices for this month and sort by data volume for ranking
+          const monthDevices = data.filter(d => d.month === month)
+            .sort((a, b) => b.dataVolume - a.dataVolume);
+          const rank = monthDevices.findIndex(d => 
+            d.device.replace(/\s*\([^)]*\)/g, '').substring(0, 15) === device
+          ) + 1;
+          monthData[device] = rank;
         }
       }
     });
@@ -56,8 +58,10 @@ export default function DeviceChart({ data, isPercentageView }: DeviceChartProps
         <YAxis 
           tick={{ fontSize: 12 }} 
           stroke="#888"
+          domain={type === 'percentage' ? [1, 10] : undefined}
+          reversed={type === 'percentage'}
           label={{ 
-            value: isPercentageView ? 'Growth (%)' : 'Data (GB)', 
+            value: type === 'absolute' ? 'Data Traffic (GB)' : 'Rank', 
             angle: -90, 
             position: 'insideLeft' 
           }}
